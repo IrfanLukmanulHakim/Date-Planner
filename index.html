@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Love Letter & Date Planner ♡</title>
+  <meta name="description" content="A cute interactive pixel-art love letter and date planner. Open the envelope and answer the question." />
+  <link rel="icon" type="image/png" href="./favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Dancing+Script:wght@500;600;700&family=Pixelify+Sans:wght@400;500;600;700&family=Press+Start+2P&family=Sacramento&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script>document.documentElement.classList.add('js')</script>
+  <link rel="stylesheet" href="./love.css" />
+</head>
+<body>
+  <!-- atmospheric background -->
+  <div class="fx" aria-hidden="true">
+    <div class="fx__aurora"></div>
+    <div class="fx__vignette"></div>
+    <div class="fx__grain"></div>
+  </div>
+
+  <!-- celebration hearts-rain layer (filled by JS on win) -->
+  <div class="rain" id="rain" aria-hidden="true"></div>
+
+  <main class="scene">
+    <!-- Heart confetti layer (parallax depth, filled by JS) -->
+    <div class="confetti" id="confetti" aria-hidden="true"></div>
+
+    <!-- STATE 1: shoot Cupid's arrow at the letter to open it -->
+    <div class="stage stage--aim" id="aimStage" tabindex="0" role="application"
+         aria-label="Aim and shoot Cupid's arrow at the letter to open it. Press space to shoot.">
+
+      <!-- floating target: the closed envelope -->
+      <div class="target" id="target">
+        <div class="envelope" aria-hidden="true">
+          <span class="envelope__flap"></span>
+          <span class="heart envelope__seal"></span>
+        </div>
+        <p class="target__label">
+          <span class="heart heart--inline"></span>
+          From someone For You
+          <span class="heart heart--inline"></span>
+        </p>
+      </div>
+
+      <!-- the flying arrow -->
+      <div class="arrow" id="arrow" aria-hidden="true"></div>
+
+      <!-- the bow -->
+      <div class="archer" id="archer" aria-hidden="true">
+        <div class="bow" id="bow"></div>
+        <span class="nock" id="nock"></span>
+      </div>
+
+      <p class="hint" id="hint">
+        <span id="hintText">Aim &amp; release to shoot Cupid&rsquo;s arrow</span>
+        <span class="heart heart--inline"></span>
+      </p>
+    </div>
+
+    <!-- STATE 2: opened "LOVE" window -->
+    <section class="window" id="window" aria-hidden="true">
+      <header class="titlebar">
+        <span class="titlebar__name">PLEASE</span>
+        <span class="titlebar__btns">
+          <button class="winbtn" type="button" aria-label="Minimize" tabindex="-1">&#95;</button>
+          <button class="winbtn" type="button" aria-label="Maximize" tabindex="-1">&#9633;</button>
+          <button class="winbtn winbtn--x" type="button" id="closeBtn" aria-label="Close letter">&#10005;</button>
+        </span>
+      </header>
+
+      <div class="heartrow" aria-hidden="true">
+        <span class="heart"></span><span class="hdot"></span>
+        <span class="heart"></span><span class="hdot"></span>
+        <span class="heart"></span>
+      </div>
+
+      <div class="content" id="content">
+        <h1 class="title" id="title">Mau jalan-jalan bareng aku ga? </h1>
+        <canvas class="cat" id="cat" width="16" height="16" aria-label="A little cat holding a heart" role="img"></canvas>
+        <div class="buttons" id="buttons">
+          <button class="btn btn--yes" type="button" id="yesBtn">YES</button>
+          <button class="btn btn--no"  type="button" id="noBtn">NO</button>
+        </div>
+        <div class="final-box" id="finalBox" hidden>
+          <p class="final" id="final">
+            Yayyy! Aku seneng banget kamu mau jalan sama aku
+            <span class="heart heart--inline"></span>
+          </p>
+          <button class="btn btn--next" type="button" id="nextToPlanBtn">Lanjut &rarr;</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STATE 3: DATE PLANNER FLOW -->
+    <section class="planner-window" id="plannerWindow" hidden aria-hidden="true">
+      <header class="titlebar">
+        <span class="titlebar__name">DATE PLANNER</span>
+        <span class="titlebar__btns">
+          <button class="winbtn winbtn--x" type="button" id="closePlannerBtn" aria-label="Close planner">&#10005;</button>
+        </span>
+      </header>
+
+      <div class="planner-body">
+        <!-- STEP 1: Date & Time -->
+        <div class="plan-step plan-step--active" id="planStep1">
+          <div class="plan-card">
+            <span class="plan-subtext">buat someone</span>
+            <h2 class="plan-title">Kapan someone freenya?</h2>
+
+            <div class="plan-field-group">
+              <div class="custom-input-box custom-date-box" id="dateBoxTrigger" tabindex="0" role="button" aria-label="Pilih tanggal">
+                <span class="box-icon">📅</span>
+                <span id="dateDisplay" class="box-text-val">Rabu, 24 Juni 2026</span>
+                <span class="box-arrow">▼</span>
+                <input type="date" id="dateInput" class="hidden-native-input" />
+              </div>
+            </div>
+
+            <div class="plan-field-group">
+              <div class="pill-group" id="timeOfDayGroup">
+                <button type="button" class="pill-item" data-value="Pagi">Pagi</button>
+                <button type="button" class="pill-item active" data-value="Siang">Siang</button>
+                <button type="button" class="pill-item" data-value="Sore">Sore</button>
+                <button type="button" class="pill-item" data-value="Malam">Malam</button>
+              </div>
+            </div>
+
+            <div class="plan-field-group">
+              <div class="custom-input-box custom-time-box" id="timeBoxTrigger" tabindex="0" role="button" aria-label="Pilih jam">
+                <span id="timeDisplay" class="box-text-val">12:00</span>
+                <span class="box-icon">🕒</span>
+                <input type="time" id="timeInput" class="hidden-native-input" value="12:00" />
+              </div>
+            </div>
+
+            <button type="button" class="plan-action-btn" id="step1NextBtn">Lanjut</button>
+          </div>
+        </div>
+
+        <!-- STEP 2: Activity Selection -->
+        <div class="plan-step" id="planStep2" hidden>
+          <div class="plan-card">
+            <button type="button" class="step-back-btn" data-back="1" aria-label="Kembali">&larr;</button>
+            <span class="plan-subtext">rencana kita</span>
+            <h2 class="plan-title">Nanti kita ngapain?</h2>
+
+            <div class="activity-grid" id="activityGrid">
+              <button type="button" class="activity-card" data-activity="Makan Malam">
+                <div class="activity-icon-wrap">
+                  <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8v6a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2V8"/><path d="M6 8V4h12v4"/><path d="M12 16v4"/><path d="M8 20h8"/><path d="M9 4v3"/><path d="M15 4v3"/></svg>
+                </div>
+                <span class="activity-label">Makan Malam</span>
+              </button>
+
+              <button type="button" class="activity-card" data-activity="Nonton Film">
+                <div class="activity-icon-wrap">
+                  <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 4v16"/><path d="M17 4v16"/><path d="M2 12h20"/><path d="M2 8h5"/><path d="M2 16h5"/><path d="M17 8h5"/><path d="M17 16h5"/></svg>
+                </div>
+                <span class="activity-label">Nonton Film</span>
+              </button>
+
+              <button type="button" class="activity-card" data-activity="Jalan-Jalan">
+                <div class="activity-icon-wrap">
+                  <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6-5.3-6-10a6 6 0 1 1 12 0c0 4.7-6 10-6 10z"/><circle cx="12" cy="11" r="2.5"/></svg>
+                </div>
+                <span class="activity-label">Jalan-Jalan</span>
+              </button>
+
+              <button type="button" class="activity-card" data-activity="Main Game">
+                <div class="activity-icon-wrap">
+                  <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><circle cx="15" cy="13" r="1" fill="currentColor"/><circle cx="17.5" cy="10.5" r="1" fill="currentColor"/><rect x="2" y="6" width="20" height="12" rx="5"/></svg>
+                </div>
+                <span class="activity-label">Main Game</span>
+              </button>
+
+              <button type="button" class="activity-card" data-activity="Belanja">
+                <div class="activity-icon-wrap">
+                  <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                </div>
+                <span class="activity-label">Belanja</span>
+              </button>
+
+              <button type="button" class="activity-card" data-activity="Ngopi Bareng">
+                <div class="activity-icon-wrap">
+                  <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
+                </div>
+                <span class="activity-label">Ngopi Bareng</span>
+              </button>
+
+              <button type="button" class="activity-card" data-activity="Melukis">
+                <div class="activity-icon-wrap">
+                  <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.92 0 1.67-.75 1.67-1.67 0-.42-.16-.8-.44-1.09-.27-.28-.43-.67-.43-1.09 0-.92.75-1.67 1.67-1.67H16c3.31 0 6-2.69 6-6 0-4.96-4.49-9-10-9z"/></svg>
+                </div>
+                <span class="activity-label">Melukis</span>
+              </button>
+
+              <button type="button" class="activity-card" data-activity="Konser">
+                <div class="activity-icon-wrap">
+                  <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                </div>
+                <span class="activity-label">Konser</span>
+              </button>
+            </div>
+
+            <div class="plan-field-group">
+              <input type="text" id="customActivityInput" class="plan-text-input" placeholder="atau tulis ide kamu..." />
+            </div>
+
+            <button type="button" class="plan-action-btn" id="step2NextBtn">Oke</button>
+          </div>
+        </div>
+
+        <!-- STEP 3: Dress Code -->
+        <div class="plan-step" id="planStep3" hidden>
+          <div class="plan-card">
+            <button type="button" class="step-back-btn" data-back="2" aria-label="Kembali">&larr;</button>
+            <span class="plan-subtext">biar makin niat</span>
+            <h2 class="plan-title">Dress code-nya?</h2>
+
+            <div class="dresscode-group" id="dressCodeGroup">
+              <button type="button" class="pill-item" data-value="Casual">Casual</button>
+              <button type="button" class="pill-item" data-value="Semi-formal">Semi-formal</button>
+              <button type="button" class="pill-item" data-value="Couple Outfit">Couple Outfit</button>
+              <button type="button" class="pill-item" data-value="Formal">Formal</button>
+              <button type="button" class="pill-item active" data-value="Bebas">Bebas</button>
+            </div>
+
+            <div class="plan-field-group">
+              <input type="text" id="customDressInput" class="plan-text-input" placeholder="atau tulis sendiri..." />
+            </div>
+
+            <button type="button" class="plan-action-btn" id="step3NextBtn">Lanjut</button>
+          </div>
+        </div>
+
+        <!-- STEP 4: Note / Message -->
+        <div class="plan-step" id="planStep4" hidden>
+          <div class="plan-card">
+            <button type="button" class="step-back-btn" data-back="3" aria-label="Kembali">&larr;</button>
+            <span class="plan-subtext">terakhir</span>
+            <h2 class="plan-title">Ada pesan buat someone?</h2>
+
+            <div class="plan-field-group">
+              <input type="text" id="messageInput" class="plan-text-input plan-text-input--lg" value="" placeholder="Tulis pesan kamu di sini..." />
+            </div>
+
+            <button type="button" class="plan-action-btn" id="step4NextBtn">Bikin tiketnya</button>
+          </div>
+        </div>
+
+        <!-- STEP 5: Ticket Result -->
+        <div class="plan-step" id="planStep5" hidden>
+          <div class="ticket-flow-wrapper">
+            <div class="ticket-top-header">
+              <span class="ticket-heart-top">♥</span>
+              <h2 class="ticket-main-title">Yeay, it's a date!</h2>
+              <span class="ticket-sub-caption">SIMPAN TIKETMU DI BAWAH</span>
+            </div>
+
+            <!-- TIKET CARD -->
+            <div class="ticket-card" id="ticketCard">
+              <div class="ticket-badge-row">
+                <span class="ticket-tag">ADMIT TWO</span>
+                <div class="ticket-heart-circle">♥</div>
+              </div>
+
+              <h3 class="ticket-card-heading">Tiket kencan</h3>
+
+              <div class="ticket-dashed-line"></div>
+
+              <div class="ticket-content-list">
+                <div class="ticket-detail-item">
+                  <span class="ticket-item-icon">👤</span>
+                  <div class="ticket-item-text">
+                    <span class="ticket-item-label">UNTUK</span>
+                    <span class="ticket-item-value" id="ticketRecipientVal">someone</span>
+                  </div>
+                </div>
+
+                <div class="ticket-detail-item">
+                  <span class="ticket-item-icon">📅</span>
+                  <div class="ticket-item-text">
+                    <span class="ticket-item-label">KAPAN</span>
+                    <span class="ticket-item-value" id="ticketDateVal">Kamis, 25 Juni 2026 • Sore • 15:00</span>
+                  </div>
+                </div>
+
+                <div class="ticket-detail-item">
+                  <span class="ticket-item-icon">☀️</span>
+                  <div class="ticket-item-text">
+                    <span class="ticket-item-label">ACARA</span>
+                    <span class="ticket-item-value" id="ticketActivitiesVal">Nonton Film, Makan Malam</span>
+                  </div>
+                </div>
+
+                <div class="ticket-detail-item">
+                  <span class="ticket-item-icon">👗</span>
+                  <div class="ticket-item-text">
+                    <span class="ticket-item-label">DRESS CODE</span>
+                    <span class="ticket-item-value" id="ticketDressVal">Bebas</span>
+                  </div>
+                </div>
+
+                <div class="ticket-detail-item">
+                  <span class="ticket-item-icon">💬</span>
+                  <div class="ticket-item-text">
+                    <span class="ticket-item-label">PESAN</span>
+                    <span class="ticket-item-value" id="ticketMessageVal">-</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="ticket-dashed-line"></div>
+
+              <p class="ticket-footer-quote">Would you like to go out with me?</p>
+            </div>
+
+            <p class="ticket-bottom-instruction">Bagikan tiketnya ke someone ya — langsung jadi gambar</p>
+
+            <div class="ticket-action-buttons">
+              <button type="button" class="ticket-btn ticket-btn--download" id="downloadTicketBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Bagikan tiket
+              </button>
+
+              <button type="button" class="ticket-btn ticket-btn--wa" id="waTicketBtn">
+                Chat WhatsApp
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- channel watermark -->
+  <a class="brand" id="brand" href="https://www.youtube.com/"
+     target="_blank" rel="noopener noreferrer" aria-label="Code &amp; Chill on YouTube">
+    <img src="./logo.jpg" alt="Code &amp; Chill" width="48" height="48" />
+  </a>
+
+  <script type="module" src="./love.js"></script>
+</body>
+</html>
